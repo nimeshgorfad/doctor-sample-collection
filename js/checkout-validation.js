@@ -8,9 +8,10 @@ jQuery(function($) {
     });
     
     // Clear validation when a radio is selected
-    $(document.body).on('change', 'input[name="sample_collection_method"]', function() {
+    $(document.body).on('change', '#sample_collection_method', function() {
         $('.sample-collection-group').removeClass('woocommerce-invalid woocommerce-invalid-required-field');
         var collection_method = $(this).val();
+        console.log('Selected collection method:', collection_method);
         if (collection_method === 'home') {
             $('.sample-collection-home-address').show();
             $('.sample-collection-clinic-address').hide();
