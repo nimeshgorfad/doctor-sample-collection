@@ -40,7 +40,7 @@ class Docty_Clinic_Sample_Collection {
                 'docty-clinic-checkout',
                 plugin_dir_url(__FILE__) . 'js/checkout-validation.js',
                 array('jquery', 'woocommerce'),
-                '1.0.0',
+                '1.1.0',
                 true
             );
         }
@@ -51,7 +51,7 @@ class Docty_Clinic_Sample_Collection {
         echo '<div id="docty-sample-collection"><h3>' . __('Sample Collection', 'docty-clinic') . '</h3>';
         
         woocommerce_form_field('sample_collection_method', array(
-            'type'     => 'radio',
+            'type'     => 'select',
             'class'    => array('form-row-wide', 'sample-collection-group'),
             'label'    => __('How would you like to provide your sample?', 'docty-clinic'),
             'required' => true,
@@ -61,7 +61,25 @@ class Docty_Clinic_Sample_Collection {
                 'center'  => __('Visit At Center', 'docty-clinic')
             )
         ), $checkout->get_value('sample_collection_method'));
-         echo '</div>';
+        
+
+         
+          woocommerce_form_field('collection_date', array(
+            'type'     => 'date',
+            'class'    => array('form-row-first'),
+            'label'    => __('date', 'docty-clinic'),
+            'required' => true,
+        ), $checkout->get_value('collection_date'));  
+        
+         woocommerce_form_field('collection_time', array(
+            'type'     => 'time',
+            'class'    => array('form-row-last'),
+            'label'    => __('time', 'docty-clinic'),
+            'required' => true,
+        ), $checkout->get_value('collection_time'));  
+ echo '</div>';
+
+
         // add field for home address
         echo '<div class="sample-collection-home-address" style="">';
         woocommerce_form_field('home_address', array(
@@ -102,7 +120,28 @@ class Docty_Clinic_Sample_Collection {
         ), $checkout->get_value('clinic_location'));
 
         echo '</div>';
-        
+        ?>  
+        <style>
+/* #sample_collection_method_home {
+    float: right;
+}
+#sample_collection_method_center{
+    float: right;
+} */
+#docty-sample-collection label{
+    margin-bottom: 5px;
+}
+.sample-collection-group label{
+    margin-bottom: 5px;
+}
+.sample-collection-home-address label{
+    margin-bottom: 5px;
+}
+.sample-collection-clinic-address label{
+    margin-bottom: 5px;
+}
+            </style>
+        <?php 
 
         // Process the data as needed
     }
@@ -114,6 +153,14 @@ class Docty_Clinic_Sample_Collection {
         if (empty($_POST['sample_collection_method'])) {
             wc_add_notice(__('Please select a sample collection method.........', 'docty-clinic'), 'error');
         }
+
+         if (empty($_POST['collection_date'])) {
+            wc_add_notice(__('Please select a collection date.........', 'docty-clinic'), 'error');
+        }
+         if (empty($_POST['collection_time'])) {
+            wc_add_notice(__('Please select a collection time.........', 'docty-clinic'), 'error');
+        }
+
         if (isset($_POST['sample_collection_method']) && $_POST['sample_collection_method'] == 'home' && empty($_POST['home_address'])) {
             wc_add_notice(__('Please provide your home address for sample collection.', 'docty-clinic'), 'error');
         }
@@ -135,6 +182,13 @@ class Docty_Clinic_Sample_Collection {
         if (!empty($data['sample_collection_method'])) {
             $order->update_meta_data('_sample_collection_method', $collection_method);
         }
+        if (!empty($data['collection_date'])) {
+            $order->update_meta_data('_collection_date', sanitize_text_field($data['collection_date']));
+        }
+        if (!empty($data['collection_time'])) {
+            $order->update_meta_data('_collection_time', sanitize_text_field($data['collection_time']));
+        }
+
         if ($collection_method === 'home' && !empty($data['home_address'])) {
             $order->update_meta_data('_home_address', sanitize_text_field($data['home_address']));
         }
@@ -151,6 +205,14 @@ class Docty_Clinic_Sample_Collection {
             echo '<div style="margin-top:15px; padding:10px; border:1px solid #ddd;">';
             $display_value = ($method == 'home') ? __('From Home', 'docty-clinic') : __('Visit At Center', 'docty-clinic');
             echo '<p><strong>' . __('Sample Collection :', 'docty-clinic') . '</strong> ' . $display_value . '</p>';
+            $collection_date = $order->get_meta('_collection_date');
+            $collection_time = $order->get_meta('_collection_time');
+            if ($collection_date) {
+                echo '<p><strong>' . __('Collection Date:', 'docty-clinic') . '</strong> ' . esc_html($collection_date) . '</p>';
+            }
+            if ($collection_time) {
+                echo '<p><strong>' . __('Collection Time:', 'docty-clinic') . '</strong> ' . esc_html($collection_time) . '</p>';
+            }
             if ($method == 'home') {
                 $home_address = $order->get_meta('_home_address');
                 echo '<p><strong>' . __('Home Address:', 'docty-clinic') . '</strong> ' . esc_html($home_address) . '</p>';
@@ -168,6 +230,12 @@ class Docty_Clinic_Sample_Collection {
         }
         if (isset($_POST['home_address'])) {
             $data['home_address'] = sanitize_text_field($_POST['home_address']);
+        }
+        if (isset($_POST['collection_date'])) {
+            $data['collection_date'] = sanitize_text_field($_POST['collection_date']);
+        }
+        if (isset($_POST['collection_time'])) {
+            $data['collection_time'] = sanitize_text_field($_POST['collection_time']);
         }
         if (isset($_POST['clinic_location'])) {
             $data['clinic_location'] = sanitize_text_field($_POST['clinic_location']);
